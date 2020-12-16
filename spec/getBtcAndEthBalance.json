@@ -1,0 +1,28 @@
+{
+    "name": "GetBtcAndEthBalance > Int256",
+    "initiators": [
+      {
+        "type": "runlog",
+        "params": {
+          "address": "YOUR_ORACLE_CONTRACT_ADDRESS"
+        }
+      }
+    ],
+    "tasks": [
+      {
+        "type": "httpget"
+      },
+      {
+        "type": "jsonparse"
+      },
+      {
+        "type": "multiply"
+      },
+      {
+        "type": "ethint256"
+      },
+      {
+        "type": "ethtx"
+      }
+    ]
+  }
