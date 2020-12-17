@@ -25,9 +25,10 @@ contract btcAndEthBalanceConsumer is ChainlinkClient, Ownable {
     onlyOwner
   {
     Chainlink.Request memory req = buildChainlinkRequest(stringToBytes32(_jobId), this, this.fulfillBtchAndEthBalance.selector);
-    req.add("get", "http://localhost:8080/balance?btcAddress=1EzwoHtiXB4iFwedPr49iywjZn2nnekhoj");
+    req.add("get", "http://47.52.148.190:8088/balance?btcAddress=1EzwoHtiXB4iFwedPr49iywjZn2nnekhoj&ethAddress=0xde0b295669a9fd93d5f28d9ec85e40f4cb697bae");
     req.add("path", "btc");
-    req.addInt("times", 100);
+    req.add("path", "eth");
+    req.addInt("times", 1);
     sendChainlinkRequestTo(_oracle, req, ORACLE_PAYMENT);
   }
 
@@ -35,11 +36,11 @@ contract btcAndEthBalanceConsumer is ChainlinkClient, Ownable {
     public
     recordChainlinkFulfillment(_requestId)
   {
-    //TODO ...  
-    emit RequestBtcAndEthBalanceFulfilled(_requestId, _btcBalance,0);
+   
+    emit RequestBtcAndEthBalanceFulfilled(_requestId, _btcBalance,_ethBalance);
     btcBalance = _btcBalance;
+    ethBalance = _ethBalance;
   }
-
 
   function getChainlinkToken() public view returns (address) {
     return chainlinkTokenAddress();

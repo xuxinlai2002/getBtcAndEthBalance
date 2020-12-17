@@ -1,6 +1,12 @@
 # api
-1.获得比特币的余额
-https://blockchain.info/balance?active=1MDUoxL1bGvMxhuoDYx6i11ePytECAk9QK
+1.获得余额
+比特币:
+.https://blockchain.info/balance?active=1MDUoxL1bGvMxhuoDYx6i11ePytECAk9QK
+以太坊:
+https://api.etherscan.io/api?module=account&action=balance&address=0xde0b295669a9fd93d5f28d9ec85e40f4cb697bae&tag=latest&apikey=YourApiKeyToken
+
+本地测试:
+curl http://localhost:8088/balance?btcAddress=1EzwoHtiXB4iFwedPr49iywjZn2nnekhoj&ethAddress=0xde0b295669a9fd93d5f28d9ec85e40f4cb697bae
 
 # sol
 2.合约调用
@@ -10,7 +16,7 @@ https://blockchain.info/balance?active=1MDUoxL1bGvMxhuoDYx6i11ePytECAk9QK
 
 4.服务器部署
 
-
+"0x99e42d431147540d09d2651eb3380e7ef49ed55e","83eaab0f270f4207ba0c05bb4e50675b","aa"
 
 
 
