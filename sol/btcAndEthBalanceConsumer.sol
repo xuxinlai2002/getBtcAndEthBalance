@@ -8,17 +8,51 @@ contract btcAndEthBalanceConsumer is ChainlinkClient, Ownable {
   uint256 constant private ORACLE_PAYMENT = 1 * LINK;
   uint256 public btcBalance;
   uint256 public ethBalance;
-
+  
   event RequestBtcAndEthBalanceFulfilled(
     bytes32 indexed requestId,
     uint256 indexed btcBalance,
     uint256 indexed ethBalance
   );
+
+  event RequestBtcBalanceFulfilled(
+    bytes32 indexed requestId,
+    uint256 indexed btcBalance
+  );
+
+  event RequestEthBalanceFulfilled(
+    bytes32 indexed requestId,
+    uint256 indexed ethBalance
+  );
+
   
   //set link token TODO do need
   constructor() public Ownable() {
     setPublicChainlinkToken();
   }
+
+  function RequestBtcBalance(address _oracle, string _jobId,string _address)
+    public
+    onlyOwner
+  {
+    Chainlink.Request memory req = buildChainlinkRequest(stringToBytes32(_jobId), this, this.fulfillBtchAndEthBalance.selector);
+    req.add("get", "http://47.52.148.190:8088/balance?address=1EzwoHtiXB4iFwedPr49iywjZn2nnekhoj");
+    req.add("path", "eth");
+    req.add("path", "btc");
+    sendChainlinkRequestTo(_oracle, req, ORACLE_PAYMENT);
+  }
+
+  function RequestBtcBalance(address _oracle, string _jobId,string _address)
+    public
+    onlyOwner
+  {
+    Chainlink.Request memory req = buildChainlinkRequest(stringToBytes32(_jobId), this, this.fulfillBtchAndEthBalance.selector);
+    req.add("get", "http://47.52.148.190:8088/balance?address=1EzwoHtiXB4iFwedPr49iywjZn2nnekhoj&ethAddress=0xde0b295669a9fd93d5f28d9ec85e40f4cb697bae");
+    req.add("path", "eth");
+    req.add("path", "btc");
+    sendChainlinkRequestTo(_oracle, req, ORACLE_PAYMENT);
+  }
+
 
   function RequestBtcAndEthBalance(address _oracle, string _jobId,string _btcAddress,string _ethAddress)
     public
@@ -26,21 +60,37 @@ contract btcAndEthBalanceConsumer is ChainlinkClient, Ownable {
   {
     Chainlink.Request memory req = buildChainlinkRequest(stringToBytes32(_jobId), this, this.fulfillBtchAndEthBalance.selector);
     req.add("get", "http://47.52.148.190:8088/balance?btcAddress=1EzwoHtiXB4iFwedPr49iywjZn2nnekhoj&ethAddress=0xde0b295669a9fd93d5f28d9ec85e40f4cb697bae");
-    req.add("path", "btc");
     req.add("path", "eth");
-    req.addInt("times", 1);
+    req.add("path", "btc");
     sendChainlinkRequestTo(_oracle, req, ORACLE_PAYMENT);
   }
 
-  function fulfillBtchAndEthBalance(bytes32 _requestId, uint256 _btcBalance,uint256 _ethBalance)
+  function RequestBtcBalance(address _oracle, string _jobId,string _btcAddress,string _ethAddress)
+    public
+    onlyOwner
+  {
+    Chainlink.Request memory req = buildChainlinkRequest(stringToBytes32(_jobId), this, this.fulfillBtchAndEthBalance.selector);
+    req.add("get", "http://47.52.148.190:8088/balance?btcAddress=1EzwoHtiXB4iFwedPr49iywjZn2nnekhoj&ethAddress=0xde0b295669a9fd93d5f28d9ec85e40f4cb697bae");
+    req.add("path", "eth");
+    req.add("path", "btc");
+    sendChainlinkRequestTo(_oracle, req, ORACLE_PAYMENT);
+  }
+
+
+
+
+  function fulfillBtchAndEthBalance(bytes32 _requestId, uint256[] _data)
     public
     recordChainlinkFulfillment(_requestId)
   {
    
-    emit RequestBtcAndEthBalanceFulfilled(_requestId, _btcBalance,_ethBalance);
-    btcBalance = _btcBalance;
-    ethBalance = _ethBalance;
+    emit RequestBtcAndEthBalanceFulfilled(_requestId, _data[0],_data[1]);
+    btcBalance = _data[0];
+    ethBalance = _data[1];
   }
+
+
+
 
   function getChainlinkToken() public view returns (address) {
     return chainlinkTokenAddress();

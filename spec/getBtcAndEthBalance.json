@@ -4,7 +4,7 @@
       {
         "type": "runlog",
         "params": {
-          "address": "YOUR_ORACLE_CONTRACT_ADDRESS"
+          "address": "0x99e42d431147540d09d2651eb3380e7ef49ed55e"
         }
       }
     ],
@@ -14,9 +14,6 @@
       },
       {
         "type": "jsonparse"
-      },
-      {
-        "type": "multiply"
       },
       {
         "type": "ethint256"

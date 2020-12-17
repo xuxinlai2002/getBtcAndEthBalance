@@ -5,8 +5,22 @@
 以太坊:
 https://api.etherscan.io/api?module=account&action=balance&address=0xde0b295669a9fd93d5f28d9ec85e40f4cb697bae&tag=latest&apikey=YourApiKeyToken
 
+
 本地测试:
-curl http://localhost:8088/balance?btcAddress=1EzwoHtiXB4iFwedPr49iywjZn2nnekhoj&ethAddress=0xde0b295669a9fd93d5f28d9ec85e40f4cb697bae
+# 合并
+http://localhost:8088/balance?btcAddress=1EzwoHtiXB4iFwedPr49iywjZn2nnekhoj&ethAddress=0xde0b295669a9fd93d5f28d9ec85e40f4cb697bae
+http://47.52.148.190:8088/balance?btcAddress=1EzwoHtiXB4iFwedPr49iywjZn2nnekhoj&ethAddress=0xde0b295669a9fd93d5f28d9ec85e40f4cb697bae
+
+# 分开 
+## btc
+http://localhost:8088/balance/btc?address=1EzwoHtiXB4iFwedPr49iywjZn2nnekhoj
+
+## eth
+http://localhost:8088/balance/eth?address=0xde0b295669a9fd93d5f28d9ec85e40f4cb697bae
+
+
+
+
 
 # sol
 2.合约调用
