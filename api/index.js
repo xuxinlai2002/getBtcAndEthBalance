@@ -83,7 +83,7 @@ const getEthBalance = (ethAddress,callback) =>{
     .catch(error => {
       console.log("get eth balance error :");
       console.log(error);
-      callback(0);
+      callback(-1);
     })
 
 }
