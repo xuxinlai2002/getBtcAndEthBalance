@@ -20,7 +20,7 @@ contract btcAndEthBalanceConsumer is ChainlinkClient, Ownable {
     setPublicChainlinkToken();
   }
 
-  function RequestBtcAndEthBalance(address _oracle, string _jobId,string _btcAddress)
+  function RequestBtcAndEthBalance(address _oracle, string _jobId,string _btcAddress,string _ethAddress)
     public
     onlyOwner
   {
@@ -32,7 +32,7 @@ contract btcAndEthBalanceConsumer is ChainlinkClient, Ownable {
     sendChainlinkRequestTo(_oracle, req, ORACLE_PAYMENT);
   }
 
-  function fulfillBtchAndEthBalance(bytes32 _requestId, uint256 _btcBalance)
+  function fulfillBtchAndEthBalance(bytes32 _requestId, uint256 _btcBalance,uint256 _ethBalance)
     public
     recordChainlinkFulfillment(_requestId)
   {

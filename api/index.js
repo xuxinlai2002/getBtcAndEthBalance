@@ -104,8 +104,8 @@ const createRequest = (input, callback) => {
       console.log('ethBalance: ', ethBalance)
 
       const retReponse = {
-          btc:btcBalance,
-          eth:ethBalance
+          status:200,
+          data:[btcBalance,ethBalance]
       }
       callback(200, retReponse)
 
