@@ -1,25 +1,28 @@
 {
-    "name": "GetBtcAndEthBalance > Int256",
-    "initiators": [
-      {
-        "type": "runlog",
-        "params": {
-          "address": "0x99e42d431147540d09d2651eb3380e7ef49ed55e"
-        }
+  "name": "GetBtcAndEthBalance > Uint256",
+  "initiators": [
+    {
+      "type": "runlog",
+      "params": {
+        "address": "0xdcf15ea52D91330D0f70Ab52aB70e26fd666e4C1"
       }
-    ],
-    "tasks": [
-      {
-        "type": "httpget"
-      },
-      {
-        "type": "jsonparse"
-      },
-      {
-        "type": "ethint256"
-      },
-      {
-        "type": "ethtx"
-      }
-    ]
-  }
+    }
+  ],
+  "tasks": [
+    {
+      "type": "httpget"
+    },
+    {
+      "type": "jsonparse"
+    },
+    {
+      "type": "multiply"
+    },
+    {
+      "type": "ethuint256"
+    },
+    {
+      "type": "ethtx"
+    }
+  ]
+}

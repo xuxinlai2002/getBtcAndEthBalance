@@ -1,6 +1,9 @@
 pragma solidity 0.4.24;
 
-import "https://github.com/smartcontractkit/chainlink/evm-contracts/src/v0.4/ChainlinkClient.sol";
+//ethereum 
+//import "https://github.com/smartcontractkit/chainlink/evm-contracts/src/v0.4/ChainlinkClient.sol";
+//ela
+import "https://github.com/elastos/Elastos.ELA.SideChain.ETH.Chainlink/evm-contracts/src/v0.4/ChainlinkClient.sol";
 import "https://github.com/smartcontractkit/chainlink/evm-contracts/src/v0.4/vendor/Ownable.sol";
 
 
@@ -25,6 +28,27 @@ contract btcAndEthBalanceConsumer is ChainlinkClient, Ownable {
   constructor() public Ownable() {
     setPublicChainlinkToken();
   }
+
+  function RequestBtcAndEthBalance(address _oracle, string _jobId,string _btcAddress,string _ethAddress)
+    public
+    onlyOwner
+  {
+    //btc
+    Chainlink.Request memory reqBtc = buildChainlinkRequest(stringToBytes32(_jobId), this, this.fulfillBtcBalance.selector);
+    reqBtc.add("get", strConcat("http://47.52.148.190:8088/balance/btc/?address=" ,_btcAddress));
+    reqBtc.add("path", "data");
+    reqBtc.addInt("times",1);
+    sendChainlinkRequestTo(_oracle, reqBtc, ORACLE_PAYMENT);
+
+    //eth
+    Chainlink.Request memory reqEth = buildChainlinkRequest(stringToBytes32(_jobId), this, this.fulfillEthBalance.selector);
+    reqEth.add("get", strConcat("http://47.52.148.190:8088/balance/eth/?address=" ,_ethAddress));
+    reqEth.add("path", "data");
+    reqEth.addInt("times",1);
+    sendChainlinkRequestTo(_oracle, reqEth, ORACLE_PAYMENT);
+
+  }
+
 
   function RequestBtcBalance(address _oracle, string _jobId,string _address)
     public

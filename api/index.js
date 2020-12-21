@@ -1,124 +1,106 @@
-const { Requester, Validator } = require('@chainlink/external-adapter')
+pragma solidity 0.4.24;
 
-// Define custom error scenarios for the API.
-// Return true for the adapter to retry.
-const customError = (data) => {
-  if (data.Response === 'Error') return true
-  return false
-}
+//import "https://github.com/smartcontractkit/chainlink/evm-contracts/src/v0.4/ChainlinkClient.sol";
+import "https://github.com/elastos/Elastos.ELA.SideChain.ETH.Chainlink/evm-contracts/src/v0.4/ChainlinkClient.sol";
+import "https://github.com/smartcontractkit/chainlink/evm-contracts/src/v0.4/vendor/Ownable.sol";
 
-const createRequest = (input, callback) => {
 
-  console.log(input);
+contract btcAndEthBalanceConsumer is ChainlinkClient, Ownable {
 
-  getBtcBalance(input.btcAddress ,(btcBalance) => {
-    console.log('btcBalance: ', btcBalance)
-
-    getEthBalance(input.ethAddress,(ethBalance) =>{
-      console.log('ethBalance: ', ethBalance)
-
-      const retReponse = {
-          status:200,
-          data:[btcBalance,ethBalance]
-      }
-      callback(200, retReponse)
-
-    });
-
-  })
-
-}
-
-//seperate the api btc
-const createBtcRequest = (address, callback) => {
+  uint256 constant private ORACLE_PAYMENT = 1 * LINK;
+  uint256 public btcBalance;
+  uint256 public ethBalance;
   
-  getBtcBalance(address ,(btcBalance) => {
-    console.log('btcBalance: ', btcBalance)
-    const retReponse = {
-        data:btcBalance
-    }
-    callback(200, retReponse)
-  });
 
-}
+  event RequestBtcBalanceFulfilled(
+    bytes32 indexed requestId,
+    uint256 indexed btcBalance
+  );
 
-const createEthRequest = (address, callback) => {
+  event RequestEthBalanceFulfilled(
+    bytes32 indexed requestId,
+    uint256 indexed ethBalance
+  );
+
   
-  getEthBalance(address ,(ethBalance) => {
-    console.log('ethBalance: ', ethBalance)
-    const retReponse = {
-        data:ethBalance
+  constructor() public Ownable() {
+    setPublicChainlinkToken();
+  }
+
+  function RequestBtcBalance(address _oracle, string _jobId,string _address)
+    public
+    onlyOwner
+  {
+    Chainlink.Request memory req = buildChainlinkRequest(stringToBytes32(_jobId), this, this.fulfillBtcBalance.selector);
+    req.add("get", strConcat("http://47.52.148.190:8088/balance/btc/?address=" ,_address));
+    req.add("path", "data");
+    req.addInt("times",1);
+    sendChainlinkRequestTo(_oracle, req, ORACLE_PAYMENT);
+  }
+
+  function RequestEthBalance(address _oracle, string _jobId,string _address)
+    public
+    onlyOwner
+  {
+    Chainlink.Request memory req = buildChainlinkRequest(stringToBytes32(_jobId), this, this.fulfillEthBalance.selector);
+    req.add("get", strConcat("http://47.52.148.190:8088/balance/eth/?address=" ,_address));
+    req.add("path", "data");
+    req.addInt("times",1);
+    sendChainlinkRequestTo(_oracle, req, ORACLE_PAYMENT);
+  }
+
+  function fulfillBtcBalance(bytes32 _requestId, uint256 _btcBalance)
+    public
+    recordChainlinkFulfillment(_requestId)
+  {
+   
+    emit RequestBtcBalanceFulfilled(_requestId, _btcBalance);
+    btcBalance = _btcBalance;
+  }
+
+  function fulfillEthBalance(bytes32 _requestId, uint256 _ethBalance)
+    public
+    recordChainlinkFulfillment(_requestId)
+  {
+   
+    emit RequestEthBalanceFulfilled(_requestId, _ethBalance);
+    ethBalance = _ethBalance;
+  }
+
+  function strConcat(string a, string b) internal pure returns (string) {
+      return string(abi.encodePacked(a, b));
+  }
+  
+  function getChainlinkToken() public view returns (address) {
+    return chainlinkTokenAddress();
+  }
+
+  function withdrawLink() public onlyOwner {
+    LinkTokenInterface link = LinkTokenInterface(chainlinkTokenAddress());
+    require(link.transfer(msg.sender, link.balanceOf(address(this))), "Unable to transfer");
+  }
+
+  function cancelRequest(
+    bytes32 _requestId,
+    uint256 _payment,
+    bytes4 _callbackFunctionId,
+    uint256 _expiration
+  )
+    public
+    onlyOwner
+  {
+    cancelChainlinkRequest(_requestId, _payment, _callbackFunctionId, _expiration);
+  }
+
+  function stringToBytes32(string memory source) private pure returns (bytes32 result) {
+    bytes memory tempEmptyStringTest = bytes(source);
+    if (tempEmptyStringTest.length == 0) {
+      return 0x0;
     }
-    callback(200, retReponse)
-  });
+
+    assembly { // solhint-disable-line no-inline-assembly
+      result := mload(add(source, 32))
+    }
+  }
 
 }
-
-const getBtcBalance = (btcAddress,callback)  => {
-
-  const url = `https://blockchain.info/q/addressbalance/${btcAddress}`
-
-  console.log(url);
-
-  Requester.request(url, customError)
-    .then(response => {
-      callback(response.data);
-    })
-    .catch(error => {
-      console.log("get btc balance error :");
-      console.log(error);
-      callback(-1);
-    })
-}
-
-const getEthBalance = (ethAddress,callback) =>{
-
-  const url = `https://api.etherscan.io/api?module=account&action=balance&address=${ethAddress}&tag=latest&apikey=NF6N7FHJSHMIXZ34XDB4VIBQ8Z6242SW3C`
-
-  Requester.request(url, customError)
-    .then(response => {
-      const result = Requester.validateResultNumber(response.data,["result"])
-      callback(result);
-    })
-    .catch(error => {
-      console.log("get eth balance error :");
-      console.log(error);
-      callback(-1);
-    })
-
-}
-
-// This is a wrapper to allow the function to work with
-// GCP Functions
-exports.gcpservice = (req, res) => {
-  createRequest(req.body, (statusCode, data) => {
-    res.status(statusCode).send(data)
-  })
-}
-
-// This is a wrapper to allow the function to work with
-// AWS Lambda
-exports.handler = (event, context, callback) => {
-  createRequest(event, (statusCode, data) => {
-    callback(null, data)
-  })
-}
-
-// This is a wrapper to allow the function to work with
-// newer AWS Lambda implementations
-exports.handlerv2 = (event, context, callback) => {
-  createRequest(JSON.parse(event.body), (statusCode, data) => {
-    callback(null, {
-      statusCode: statusCode,
-      body: JSON.stringify(data),
-      isBase64Encoded: false
-    })
-  })
-}
-
-// This allows the function to be exported for testing
-// or for running in express
-module.exports.createRequest = createRequest
-//
-module.exports.createBtcRequest = createBtcRequest
-module.exports.createEthRequest = createEthRequest
